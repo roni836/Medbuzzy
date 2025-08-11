@@ -120,22 +120,89 @@ public class MainActivity extends AppCompatActivity {
     private class WebViewClientDemo extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
+
+            Uri uri = Uri.parse(url);
+
             if (url.startsWith("tel:")) {
-                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
+                Intent intent = new Intent(Intent.ACTION_DIAL, uri);
                 startActivity(intent);
                 return true;
             } else if (url.startsWith("mailto:")) {
-                Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
+                Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
                 startActivity(intent);
                 return true;
             } else if (url.startsWith("whatsapp:")) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 startActivity(intent);
                 return true;
-            } else {
-                view.loadUrl(url);
+            }
+
+            // Open Instagram
+            if (url.contains("instagram.com")) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.setPackage("com.instagram.android");
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    // Instagram app not installed, open in browser
+                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                }
                 return true;
             }
+
+            // Open Facebook
+            if (url.contains("facebook.com")) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.setPackage("com.facebook.katana");
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                }
+                return true;
+            }
+
+            // Open Twitter / X
+            if (url.contains("twitter.com") || url.contains("x.com")) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.setPackage("com.twitter.android");
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                }
+                return true;
+            }
+
+            if (url.contains("youtube.com") || url.contains("youtu.be")) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.setPackage("com.google.android.youtube");
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                }
+                return true;
+            }
+
+            // If the link is NOT part of your website, open in Chrome
+            if (!url.contains("medbuzzy.com")) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.setPackage("com.android.chrome"); // Try Chrome first
+                try {
+                    startActivity(intent);
+                } catch (Exception e) {
+                    // Chrome not installed → fallback to default browser
+                    intent.setPackage(null);
+                    startActivity(intent);
+                }
+                return true;
+            }
+
+            // Otherwise, load in WebView
+            view.loadUrl(url);
+            return true;
         }
 
         @Override
